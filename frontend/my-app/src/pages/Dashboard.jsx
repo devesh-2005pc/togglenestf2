@@ -30,18 +30,16 @@ const Dashboard = () => {
   const [showTaskPopup, setShowTaskPopup] = useState(false);
   const [showProjectPopup, setShowProjectPopup] = useState(false);
 
-  // 🔹 Load dashboard overview
+  // =====================
+  // LOAD DASHBOARD
+  // =====================
   const loadDashboard = async () => {
     try {
-      const res = await api.get("/dashboard");
+      const res = await api.get("/api/dashboard");
 
-      // Stats cards
       setStats(res.data.stats);
-
-      // Recent Activity
       setRecentActivity(res.data.recentActivity || []);
 
-      // Sprint chart data
       if (res.data.sprintChart) {
         setSprintChartData([
           { name: "Completed", value: res.data.sprintChart.completed },
@@ -53,20 +51,25 @@ const Dashboard = () => {
     }
   };
 
-  // 🔹 Load tasks
+  // =====================
+  // LOAD TASKS
+  // =====================
   const loadTasks = async () => {
     try {
-      const res = await api.get("/tasks/my");
+      const res = await api.get("/api/tasks/my");
       setTasks(res.data);
     } catch (err) {
       console.error("Error loading tasks:", err);
     }
   };
 
-  // 🔹 Load projects
+  // =====================
+  // LOAD PROJECTS
+  // =====================
   const loadProjects = async () => {
     try {
-      const res = await api.get("/projects");
+      const res = await api.get("/api/projects");
+
       const formattedProjects = res.data.map((project) => ({
         _id: project._id,
         name: project.name,
@@ -74,54 +77,63 @@ const Dashboard = () => {
         action: `Created project: ${project.name}`,
         time: new Date(project.createdAt).toLocaleString(),
       }));
+
       setProjects(formattedProjects);
     } catch (err) {
       console.error("Error loading projects:", err);
     }
   };
 
-  // 🔹 Delete activity item
+  // =====================
+  // DELETE ACTIVITY
+  // =====================
   const deleteActivityItem = async (itemId, type) => {
     try {
-      if (type === 'task') {
-        await api.delete(`/tasks/${itemId}`);
+      if (type === "task") {
+        await api.delete(`/api/tasks/${itemId}`);
         Swal.fire({
-          icon: 'success',
-          title: 'Task Deleted',
-          text: 'Task has been deleted successfully!',
+          icon: "success",
+          title: "Task Deleted",
+          text: "Task has been deleted successfully!",
           timer: 2000,
           showConfirmButton: false,
         });
-      } else if (type === 'project') {
-        await api.delete(`/projects/${itemId}`);
+      } else if (type === "project") {
+        await api.delete(`/api/projects/${itemId}`);
         Swal.fire({
-          icon: 'success',
-          title: 'Project Deleted',
-          text: 'Project has been deleted successfully!',
+          icon: "success",
+          title: "Project Deleted",
+          text: "Project has been deleted successfully!",
           timer: 2000,
           showConfirmButton: false,
         });
       }
-      // Reload dashboard to refresh activity
+
       loadDashboard();
+      loadTasks();
+      loadProjects();
     } catch (err) {
-      console.error('Delete error:', err);
+      console.error("Delete error:", err);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err.response?.data?.msg || 'Failed to delete item',
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.msg || "Failed to delete item",
       });
     }
   };
 
-  // 🔹 Initial load on component mount
+  // =====================
+  // INITIAL LOAD
+  // =====================
   useEffect(() => {
     loadDashboard();
     loadTasks();
     loadProjects();
   }, []);
 
-  // 🔹 Team performance stats
+  // =====================
+  // TEAM PERFORMANCE
+  // =====================
   const completedTasks = tasks.filter((t) => t.completed).length;
   const totalTasks = tasks.length || 1;
 
@@ -138,7 +150,6 @@ const Dashboard = () => {
         <h2>Dashboard Overview</h2>
         <p className="muted-text">Welcome back! Here's what's happening.</p>
 
-        {/* 🔹 Stats Cards */}
         {stats && (
           <div className="stats-grid">
             <StatCard title="Workspaces" value={stats.workspaces} />
@@ -149,51 +160,48 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* 🔹 Activity + Sprint Chart */}
         <div className="bottom-grid">
-          {/* Recent Activity */}
           <div className="activity card card--glow">
             <h3>Recent Activity</h3>
+
             {recentActivity.length === 0 ? (
               <p className="empty-text">No recent activity</p>
             ) : (
-              recentActivity
-                .slice(0, 5) // show latest 5
-                .map((item, i) => (
-                  <div
-                    key={i}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      Swal.fire({
-                        title: 'Delete?',
-                        text: `Delete this ${item.type}?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Delete',
-                        cancelButtonText: 'Cancel'
-                      }).then((result) => {
-                        if (result.isConfirmed) {
-                          deleteActivityItem(item.itemId, item.type);
-                        }
-                      });
-                    }}
-                    style={{ cursor: 'context-menu' }}
-                  >
-                    <ActivityItem
-                      user={item.user || "You"}
-                      action={item.action}
-                      time={new Date(item.time).toLocaleString()}
-                    />
-                  </div>
-                ))
+              recentActivity.slice(0, 5).map((item, i) => (
+                <div
+                  key={i}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    Swal.fire({
+                      title: "Delete?",
+                      text: `Delete this ${item.type}?`,
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonColor: "#ef4444",
+                      cancelButtonColor: "#6b7280",
+                      confirmButtonText: "Delete",
+                      cancelButtonText: "Cancel",
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        deleteActivityItem(item.itemId, item.type);
+                      }
+                    });
+                  }}
+                  style={{ cursor: "context-menu" }}
+                >
+                  <ActivityItem
+                    user={item.user || "You"}
+                    action={item.action}
+                    time={new Date(item.time).toLocaleString()}
+                  />
+                </div>
+              ))
             )}
           </div>
 
-          {/* Sprint Progress */}
           <div className="progress card card--glow">
             <h3>Sprint Progress</h3>
+
             <div className="sprint-chart-wrapper">
               <ResponsiveContainer width="100%" height={170}>
                 <PieChart>
@@ -213,7 +221,8 @@ const Dashboard = () => {
               <div className="sprint-chart-center">
                 <h4>
                   {sprintChartData[0].value}/
-                  {sprintChartData[0].value + sprintChartData[1].value}
+                  {sprintChartData[0].value +
+                    sprintChartData[1].value}
                 </h4>
                 <span>Completed</span>
               </div>
@@ -221,9 +230,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 🔹 Bottom Cards */}
         <div className="overview-grid">
-          {/* Team Performance */}
           <div className="big-card card card--glow">
             <h3>Team Performance</h3>
             <div className="performance-stats">
@@ -238,7 +245,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Workspace Overview */}
           <div className="big-card card card--glow">
             <h3>Workspace Overview</h3>
             <div className="workspace-item">
@@ -248,14 +254,6 @@ const Dashboard = () => {
             <div className="workspace-item">
               <span>Team Members</span>
               <strong>{stats?.members || 1}</strong>
-            </div>
-
-            <div className="workspace-storage">
-              <span>Storage</span>
-              <strong>0GB / 10GB</strong>
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: "0%" }} />
-              </div>
             </div>
           </div>
         </div>
@@ -269,6 +267,7 @@ const Dashboard = () => {
           loadDashboard();
         }}
       />
+
       <CreateProjectPopup
         show={showProjectPopup}
         onClose={() => setShowProjectPopup(false)}
