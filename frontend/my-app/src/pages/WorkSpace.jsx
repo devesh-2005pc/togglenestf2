@@ -229,9 +229,9 @@ useEffect(() => {
         const updatedWorkspaces = workspaces.map(w => 
           (w._id || w.id) === selectedWorkspaceId 
             ? { 
-                ...w, 
-                members: (w.members || []).length + 1,
-                members: [...(w.members || []), { email: newMemberEmail.trim() }]
+         ...w,
+  members: [...(w.members || []), { email: newMemberEmail.trim() }],
+  membersCount: (w.members?.length || 0) + 1
               }
             : w
         );
@@ -264,7 +264,7 @@ useEffect(() => {
             ? {
                 ...w,
                 members: (w.members || []).filter(m => m.email !== email),
-                membersCount: Math.max(1, ((w.members || []).length - 1))
+membersCount: Math.max(0, ((w.members || []).length - 1))
               }
             : w
         );
