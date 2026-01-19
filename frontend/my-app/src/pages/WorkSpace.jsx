@@ -1,6 +1,6 @@
 // ✅ FINAL WorkSpace.jsx - FULLY WORKING BACKEND + MOCK DATA HYBRID
 import React, { useState, useEffect } from "react";
-import "../theme/WorkSpace.css"; 
+import "../theme/Workspace.css"; 
 import api from "../api/axios";
 
 const WorkSpace = () => {
@@ -22,100 +22,81 @@ const WorkSpace = () => {
   const [error, setError] = useState(null);
   const [useMockData, setUseMockData] = useState(false);
 
-  // ✅ FIXED: Close context menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (contextMenu.show) {
-        const contextMenuElement = document.querySelector('.context-menu');
-        if (contextMenuElement && !contextMenuElement.contains(e.target)) {
-          setContextMenu({ show: false, x: 0, y: 0, workspaceId: null });
+ // Load workspaces (with backend fallback)
+useEffect(() => {
+  const fetchWorkspaces = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/workspaces"); // always use /api
+
+      // Set current workspace from localStorage or first available
+      const saved = localStorage.getItem("currentWorkspace");
+      let initialWorkspace = null;
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          initialWorkspace = res.data.find(
+            (w) => w._id === parsed._id || w.id === parsed.id
+          );
+        } catch (e) {
+          console.log("Invalid saved workspace");
         }
       }
-    };
-
-    if (contextMenu.show) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      if (!initialWorkspace && res.data.length > 0) {
+        initialWorkspace = res.data.find((w) => w.active) || res.data[0];
+      }
+      setCurrentWorkspace(initialWorkspace);
+      if (initialWorkspace) {
+        localStorage.setItem("currentWorkspace", JSON.stringify(initialWorkspace));
+      }
+    } catch (err) {
+      console.error("❌ Backend failed, using mock data:", err);
+      setUseMockData(true);
+      loadMockData();
+      setError("Using demo data (backend unavailable)");
+    } finally {
+      setLoading(false);
     }
-  }, [contextMenu.show]);
+  };
 
-  // ✅ FETCH WORKSPACES - BACKEND FIRST, FALLBACK TO MOCK
-  useEffect(() => {
-    const fetchWorkspaces = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Try backend first
-        const res = await api.get("/workspaces");
-        console.log("✅ Backend workspaces:", res.data);
-        setWorkspaces(res.data || []);
-
-        // Set current workspace from localStorage or first available
-        const saved = localStorage.getItem("currentWorkspace");
-        let initialWorkspace = null;
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            initialWorkspace = res.data.find(w => w._id === parsed._id || w.id === parsed.id);
-          } catch (e) {
-            console.log("Invalid saved workspace");
-          }
-        }
-        if (!initialWorkspace && res.data.length > 0) {
-          initialWorkspace = res.data.find(w => w.active) || res.data[0];
-        }
-        setCurrentWorkspace(initialWorkspace);
-        if (initialWorkspace) {
-          localStorage.setItem("currentWorkspace", JSON.stringify(initialWorkspace));
-        }
-      } catch (err) {
-        console.error("❌ Backend failed, using mock data:", err);
-        setUseMockData(true);
-        loadMockData();
-        setError("Using demo data (backend unavailable)");
-      } finally {
-        setLoading(false);
+  const loadMockData = () => {
+    const mockWorkspaces = [
+      {
+        _id: "1",
+        id: "1",
+        name: "Acme Corp HQ",
+        projects: 12,
+        active: true,
+        membersCount: 3, // separate numeric field if needed
+        members: [{ email: "john@acme.com" }, { email: "jane@acme.com" }]
+      },
+      {
+        _id: "2",
+        id: "2",
+        name: "Personal Projects",
+        projects: 5,
+        active: false,
+        membersCount: 1,
+        members: [{ email: "you@toggle.com" }]
+      },
+      {
+        _id: "3",
+        id: "3",
+        name: "Marketing Team",
+        projects: 8,
+        active: false,
+        membersCount: 4,
+        members: [{ email: "marketing@company.com" }]
       }
-    };
+    ];
 
-    const loadMockData = () => {
-      const mockWorkspaces = [
-        {
-          _id: "1",
-          id: "1",
-          name: "Acme Corp HQ",
-          projects: 12,
-          members: 3,
-          active: true,
-          members: [{ email: "john@acme.com" }, { email: "jane@acme.com" }]
-        },
-        {
-          _id: "2", 
-          id: "2",
-          name: "Personal Projects",
-          projects: 5,
-          members: 1,
-          active: false,
-          members: [{ email: "you@toggle.com" }]
-        },
-        {
-          _id: "3",
-          id: "3",
-          name: "Marketing Team", 
-          projects: 8,
-          members: 4,
-          active: false,
-          members: [{ email: "marketing@company.com" }]
-        }
-      ];
-      setWorkspaces(mockWorkspaces);
-      setCurrentWorkspace(mockWorkspaces[0]);
-      localStorage.setItem("currentWorkspace", JSON.stringify(mockWorkspaces[0]));
-    };
+    setWorkspaces(mockWorkspaces);
+    setCurrentWorkspace(mockWorkspaces[0]);
+    localStorage.setItem("currentWorkspace", JSON.stringify(mockWorkspaces[0]));
+  };
 
-    fetchWorkspaces();
-  }, []);
+  fetchWorkspaces();
+}, []);
 
   // ✅ UNIVERSAL SWITCH (Backend OR Mock)
   const handleSwitch = async (workspace) => {

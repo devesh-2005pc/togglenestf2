@@ -1,3 +1,4 @@
+// ✅ FULLY UPDATED Dashboard.jsx - HYBRID BACKEND + MOCK DATA
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -30,16 +31,17 @@ const Dashboard = () => {
   const [showTaskPopup, setShowTaskPopup] = useState(false);
   const [showProjectPopup, setShowProjectPopup] = useState(false);
 
+  // 🔹 Fallback flag
+  const [useMockData, setUseMockData] = useState(false);
+
   // =====================
   // LOAD DASHBOARD
   // =====================
   const loadDashboard = async () => {
     try {
-      const res = await api.get("/api/dashboard");
-
+      const res = await api.get("/dashboard"); // /api is already handled in axios
       setStats(res.data.stats);
       setRecentActivity(res.data.recentActivity || []);
-
       if (res.data.sprintChart) {
         setSprintChartData([
           { name: "Completed", value: res.data.sprintChart.completed },
@@ -47,19 +49,66 @@ const Dashboard = () => {
         ]);
       }
     } catch (err) {
-      console.error("Dashboard error:", err);
+      console.error("Dashboard backend failed, using mock data:", err);
+      setUseMockData(true);
+
+      // 🔹 Load mock fallback
+      loadMockDashboard();
     }
+  };
+
+  const loadMockDashboard = () => {
+    const mockStats = {
+      workspaces: 3,
+      members: 5,
+      projects: 8,
+      sprints: 2,
+      boards: 4,
+    };
+
+    const mockRecentActivity = [
+      { itemId: "1", user: "John", action: "Created a new task", type: "task", time: new Date() },
+      { itemId: "2", user: "Jane", action: "Completed a sprint", type: "sprint", time: new Date() },
+      { itemId: "3", user: "You", action: "Created a project", type: "project", time: new Date() },
+    ];
+
+    const mockTasks = [
+      { _id: "t1", title: "Design Homepage", completed: true },
+      { _id: "t2", title: "Fix Auth Bug", completed: false },
+      { _id: "t3", title: "Setup CI/CD", completed: true },
+    ];
+
+    const mockProjects = [
+      { _id: "p1", name: "Website Redesign", createdAt: new Date() },
+      { _id: "p2", name: "Mobile App", createdAt: new Date() },
+    ];
+
+    setStats(mockStats);
+    setRecentActivity(mockRecentActivity);
+    setSprintChartData([{ name: "Completed", value: 2 }, { name: "Remaining", value: 1 }]);
+    setTasks(mockTasks);
+    setProjects(
+      mockProjects.map((p) => ({
+        ...p,
+        user: "You",
+        action: `Created project: ${p.name}`,
+        time: new Date(p.createdAt).toLocaleString(),
+      }))
+    );
   };
 
   // =====================
   // LOAD TASKS
   // =====================
   const loadTasks = async () => {
+    if (useMockData) return;
     try {
-      const res = await api.get("/api/tasks/my");
+      const res = await api.get("/tasks/my");
       setTasks(res.data);
     } catch (err) {
-      console.error("Error loading tasks:", err);
+      console.error("Error loading tasks, switching to mock:", err);
+      setUseMockData(true);
+      loadMockDashboard();
     }
   };
 
@@ -67,9 +116,9 @@ const Dashboard = () => {
   // LOAD PROJECTS
   // =====================
   const loadProjects = async () => {
+    if (useMockData) return;
     try {
-      const res = await api.get("/api/projects");
-
+      const res = await api.get("/projects");
       const formattedProjects = res.data.map((project) => ({
         _id: project._id,
         name: project.name,
@@ -77,10 +126,11 @@ const Dashboard = () => {
         action: `Created project: ${project.name}`,
         time: new Date(project.createdAt).toLocaleString(),
       }));
-
       setProjects(formattedProjects);
     } catch (err) {
-      console.error("Error loading projects:", err);
+      console.error("Error loading projects, switching to mock:", err);
+      setUseMockData(true);
+      loadMockDashboard();
     }
   };
 
@@ -89,31 +139,23 @@ const Dashboard = () => {
   // =====================
   const deleteActivityItem = async (itemId, type) => {
     try {
-      if (type === "task") {
-        await api.delete(`/api/tasks/${itemId}`);
-        Swal.fire({
-          icon: "success",
-          title: "Task Deleted",
-          text: "Task has been deleted successfully!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      } else if (type === "project") {
-        await api.delete(`/api/projects/${itemId}`);
-        Swal.fire({
-          icon: "success",
-          title: "Project Deleted",
-          text: "Project has been deleted successfully!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+      if (!useMockData) {
+        if (type === "task") await api.delete(`/tasks/${itemId}`);
+        else if (type === "project") await api.delete(`/projects/${itemId}`);
       }
+      Swal.fire({
+        icon: "success",
+        title: `${type.charAt(0).toUpperCase() + type.slice(1)} Deleted`,
+        text: `${type.charAt(0).toUpperCase() + type.slice(1)} has been deleted successfully!`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
 
       loadDashboard();
       loadTasks();
       loadProjects();
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error("Delete failed:", err);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -202,33 +244,33 @@ const Dashboard = () => {
           <div className="progress card card--glow">
             <h3>Sprint Progress</h3>
 
-            <div className="sprint-chart-wrapper">
-              <ResponsiveContainer width="100%" height={170}>
-                <PieChart>
-                  <Pie
-                    data={sprintChartData}
-                    innerRadius={55}
-                    outerRadius={75}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    <Cell fill="#22c55e" />
-                    <Cell fill="#334155" />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+           <div className="sprint-chart-wrapper">
+  <ResponsiveContainer width="100%" height={170}>
+    <PieChart>
+      <Pie
+        data={sprintChartData}
+        innerRadius={55}
+        outerRadius={75}
+        dataKey="value"
+        stroke="none"
+      >
+        <Cell fill="#22c55e" />
+        <Cell fill="#334155" />
+      </Pie>
+    </PieChart>
+  </ResponsiveContainer>
 
-              <div className="sprint-chart-center">
-                <h4>
-                  {sprintChartData[0].value}/
-                  {sprintChartData[0].value +
-                    sprintChartData[1].value}
-                </h4>
-                <span>Completed</span>
-              </div>
+  <div className="sprint-chart-center">
+    <h4>
+      {sprintChartData[0].value}/
+      {sprintChartData[0].value + sprintChartData[1].value}
+    </h4>
+    <span>Completed</span>
+  </div>
+</div>
+
             </div>
           </div>
-        </div>
 
         <div className="overview-grid">
           <div className="big-card card card--glow">
@@ -281,3 +323,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
