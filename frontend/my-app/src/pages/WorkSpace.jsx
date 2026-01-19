@@ -10,123 +10,118 @@ const WorkSpace = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
   const [deleteModal, setDeleteModal] = useState({ show: false, workspaceId: null });
-  
+
   // Context menu + Members management
   const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, workspaceId: null });
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(null);
   const [newMemberEmail, setNewMemberEmail] = useState("");
-  
+
   // Loading & Error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [useMockData, setUseMockData] = useState(false);
 
- // Load workspaces (with backend fallback)
-useEffect(() => {
-  const fetchWorkspaces = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/workspaces"); // always use /api
+  // Load workspaces (with backend fallback)
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get("/workspaces"); // always use /api
 
-      // Set current workspace from localStorage or first available
-      const saved = localStorage.getItem("currentWorkspace");
-      let initialWorkspace = null;
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          initialWorkspace = res.data.find(
-            (w) => w._id === parsed._id || w.id === parsed.id
-          );
-        } catch (e) {
-          console.log("Invalid saved workspace");
+        // Set current workspace from localStorage or first available
+        const saved = localStorage.getItem("currentWorkspace");
+        let initialWorkspace = null;
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            initialWorkspace = res.data.find(
+              (w) => w._id === parsed._id || w.id === parsed.id
+            );
+          } catch (e) {
+            console.log("Invalid saved workspace");
+          }
         }
+        if (!initialWorkspace && res.data.length > 0) {
+          initialWorkspace = res.data.find((w) => w.active) || res.data[0];
+        }
+        setCurrentWorkspace(initialWorkspace);
+        if (initialWorkspace) {
+          localStorage.setItem("currentWorkspace", JSON.stringify(initialWorkspace));
+        }
+      } catch (err) {
+        console.error("❌ Backend failed, using mock data:", err);
+        setUseMockData(true);
+        loadMockData();
+        setError("Using demo data (backend unavailable)");
+      } finally {
+        setLoading(false);
       }
-      if (!initialWorkspace && res.data.length > 0) {
-        initialWorkspace = res.data.find((w) => w.active) || res.data[0];
-      }
-      setCurrentWorkspace(initialWorkspace);
-      if (initialWorkspace) {
-        localStorage.setItem("currentWorkspace", JSON.stringify(initialWorkspace));
-      }
-    } catch (err) {
-      console.error("❌ Backend failed, using mock data:", err);
-      setUseMockData(true);
-      loadMockData();
-      setError("Using demo data (backend unavailable)");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const loadMockData = () => {
-    const mockWorkspaces = [
-      {
-        _id: "1",
-        id: "1",
-        name: "Acme Corp HQ",
-        projects: 12,
-        active: true,
-        membersCount: 3, // separate numeric field if needed
-        members: [{ email: "john@acme.com" }, { email: "jane@acme.com" }]
-      },
-      {
-        _id: "2",
-        id: "2",
-        name: "Personal Projects",
-        projects: 5,
-        active: false,
-        membersCount: 1,
-        members: [{ email: "you@toggle.com" }]
-      },
-      {
-        _id: "3",
-        id: "3",
-        name: "Marketing Team",
-        projects: 8,
-        active: false,
-        membersCount: 4,
-        members: [{ email: "marketing@company.com" }]
-      }
-    ];
+    const loadMockData = () => {
+      const mockWorkspaces = [
+        {
+          _id: "1",
+          id: "1",
+          name: "Acme Corp HQ",
+          projects: 12,
+          active: true,
+          membersCount: 2,
+          members: [{ email: "john@acme.com" }, { email: "jane@acme.com" }]
+        },
+        {
+          _id: "2",
+          id: "2",
+          name: "Personal Projects",
+          projects: 5,
+          active: false,
+          membersCount: 1,
+          members: [{ email: "you@toggle.com" }]
+        },
+        {
+          _id: "3",
+          id: "3",
+          name: "Marketing Team",
+          projects: 8,
+          active: false,
+          membersCount: 1,
+          members: [{ email: "marketing@company.com" }]
+        }
+      ];
 
-    setWorkspaces(mockWorkspaces);
-    setCurrentWorkspace(mockWorkspaces[0]);
-    localStorage.setItem("currentWorkspace", JSON.stringify(mockWorkspaces[0]));
-  };
+      setWorkspaces(mockWorkspaces);
+      setCurrentWorkspace(mockWorkspaces[0]);
+      localStorage.setItem("currentWorkspace", JSON.stringify(mockWorkspaces[0]));
+    };
 
-  fetchWorkspaces();
-}, []);
+    fetchWorkspaces();
+  }, []);
 
   // ✅ UNIVERSAL SWITCH (Backend OR Mock)
   const handleSwitch = async (workspace) => {
+    const updateLocalState = () => {
+      const updatedWorkspaces = workspaces.map(w => ({
+        ...w,
+        active: (w._id || w.id) === (workspace._id || workspace.id)
+      }));
+      setWorkspaces(updatedWorkspaces);
+      setCurrentWorkspace(workspace);
+      localStorage.setItem("currentWorkspace", JSON.stringify(workspace));
+    };
+
     try {
       if (!useMockData) {
         await api.patch(`/workspaces/${workspace._id || workspace.id}/activate`);
       }
-      
-      // Always update local state
-      const updatedWorkspaces = workspaces.map(w => ({
-        ...w,
-        active: (w._id || w.id) === (workspace._id || workspace.id)
-      }));
-      setWorkspaces(updatedWorkspaces);
-      setCurrentWorkspace(workspace);
-      localStorage.setItem("currentWorkspace", JSON.stringify(workspace));
+      updateLocalState();
     } catch (err) {
       console.error("Switch failed:", err);
-      // Fallback to local state update
-      const updatedWorkspaces = workspaces.map(w => ({
-        ...w,
-        active: (w._id || w.id) === (workspace._id || workspace.id)
-      }));
-      setWorkspaces(updatedWorkspaces);
-      setCurrentWorkspace(workspace);
-      localStorage.setItem("currentWorkspace", JSON.stringify(workspace));
+      updateLocalState();
     }
   };
 
-  // ✅ CONTEXT MENU - FIXED ID MATCHING
+  // ✅ CONTEXT MENU
   const handleContextMenu = (e, workspaceId) => {
     e.preventDefault();
     e.stopPropagation();
@@ -142,46 +137,43 @@ useEffect(() => {
     setContextMenu({ show: false, x: 0, y: 0, workspaceId: null });
   };
 
-  // ✅ MANAGE MEMBERS - FIXED
+  // ✅ MANAGE MEMBERS
   const handleManageMembers = (workspaceId) => {
-    console.log("Managing members for:", workspaceId); // DEBUG
     setSelectedWorkspaceId(workspaceId);
     handleCloseContextMenu();
     setShowMembersModal(true);
   };
 
-  // ✅ DELETE WORKSPACE (Universal)
+  // ✅ DELETE WORKSPACE
   const handleDeleteConfirm = async () => {
     try {
       if (!useMockData) {
         await api.delete(`/workspaces/${deleteModal.workspaceId}`);
       }
-      
+
       const remaining = workspaces.filter(w => (w._id || w.id) !== deleteModal.workspaceId);
       setWorkspaces(remaining);
 
       if (currentWorkspace && (currentWorkspace._id || currentWorkspace.id) === deleteModal.workspaceId && remaining.length > 0) {
-        const nextWorkspace = remaining[0];
-        await handleSwitch(nextWorkspace);
+        await handleSwitch(remaining[0]);
       } else if (remaining.length === 0) {
         setCurrentWorkspace(null);
         localStorage.removeItem("currentWorkspace");
       }
-      
+
       setDeleteModal({ show: false, workspaceId: null });
     } catch (err) {
       console.error("Delete failed:", err);
-      // Mock delete fallback
       const remaining = workspaces.filter(w => (w._id || w.id) !== deleteModal.workspaceId);
       setWorkspaces(remaining);
       setDeleteModal({ show: false, workspaceId: null });
     }
   };
 
-  // ✅ CREATE WORKSPACE (Universal)
+  // ✅ CREATE WORKSPACE
   const createWorkspace = async () => {
     if (!newWorkspaceName.trim()) return alert("Please enter a workspace name");
-    
+
     try {
       if (!useMockData) {
         const res = await api.post("/workspaces", { name: newWorkspaceName.trim() });
@@ -190,15 +182,14 @@ useEffect(() => {
         setCurrentWorkspace(newWs);
         localStorage.setItem("currentWorkspace", JSON.stringify(newWs));
       } else {
-        // Mock create
         const newWs = {
           _id: Date.now().toString(),
           id: Date.now().toString(),
           name: newWorkspaceName.trim(),
           projects: 0,
-          members: 1,
-          active: true,
-          members: [{ email: "you@toggle.com" }]
+          membersCount: 1,
+          members: [{ email: "you@toggle.com" }],
+          active: true
         };
         setWorkspaces([newWs, ...workspaces]);
         setCurrentWorkspace(newWs);
@@ -212,10 +203,10 @@ useEffect(() => {
     }
   };
 
-  // ✅ ADD MEMBER (Universal)
+  // ✅ ADD MEMBER
   const addMember = async () => {
     if (!newMemberEmail.trim()) return;
-    
+
     try {
       if (!useMockData) {
         const res = await api.post(`/workspaces/${selectedWorkspaceId}/members`, { email: newMemberEmail.trim() });
@@ -225,13 +216,12 @@ useEffect(() => {
           setCurrentWorkspace(updatedWs);
         }
       } else {
-        // Mock add
-        const updatedWorkspaces = workspaces.map(w => 
-          (w._id || w.id) === selectedWorkspaceId 
-            ? { 
-         ...w,
-  members: [...(w.members || []), { email: newMemberEmail.trim() }],
-  membersCount: (w.members?.length || 0) + 1
+        const updatedWorkspaces = workspaces.map(w =>
+          (w._id || w.id) === selectedWorkspaceId
+            ? {
+                ...w,
+                members: [...(w.members || []), { email: newMemberEmail.trim() }],
+                membersCount: (w.members?.length || 0) + 1
               }
             : w
         );
@@ -247,7 +237,7 @@ useEffect(() => {
     }
   };
 
-  // ✅ REMOVE MEMBER (Universal)
+  // ✅ REMOVE MEMBER
   const removeMember = async (email) => {
     try {
       if (!useMockData) {
@@ -258,13 +248,12 @@ useEffect(() => {
           setCurrentWorkspace(updatedWs);
         }
       } else {
-        // Mock remove
-        const updatedWorkspaces = workspaces.map(w => 
-          (w._id || w.id) === selectedWorkspaceId 
+        const updatedWorkspaces = workspaces.map(w =>
+          (w._id || w.id) === selectedWorkspaceId
             ? {
                 ...w,
                 members: (w.members || []).filter(m => m.email !== email),
-membersCount: Math.max(0, ((w.members || []).length - 1))
+                membersCount: Math.max(0, (w.members?.length || 1) - 1)
               }
             : w
         );
@@ -281,6 +270,9 @@ membersCount: Math.max(0, ((w.members || []).length - 1))
   const filteredWorkspaces = workspaces.filter(ws =>
     ws.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  
+
 
   if (loading) {
     return (
