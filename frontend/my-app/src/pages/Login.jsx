@@ -17,7 +17,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await api.post("/auth/login", {
+      // ✅ CORRECT API PATH
+      const res = await api.post("/api/auth/login", {
         email,
         password,
       });
@@ -25,10 +26,9 @@ const Login = () => {
       // ✅ Save JWT
       localStorage.setItem("token", res.data.token);
 
-      // ✅ Save user (optional but recommended)
+      // ✅ Save user
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // ✅ Redirect
       navigate("/dashboard");
 
     } catch (err) {

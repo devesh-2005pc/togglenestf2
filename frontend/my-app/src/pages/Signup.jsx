@@ -19,16 +19,14 @@ const Signup = () => {
     }
 
     try {
-      // 🔥 CALL BACKEND REGISTER API
-      await api.post("/auth/register", {
+      // ✅ CORRECT API PATH
+      await api.post("/api/auth/register", {
         name,
         email,
-        password
+        password,
       });
 
       alert("Signup successful! Please login.");
-
-      // 🔥 redirect to login page
       navigate("/login");
 
     } catch (error) {

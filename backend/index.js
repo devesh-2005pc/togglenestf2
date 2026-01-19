@@ -9,13 +9,13 @@ const app = express();
 // MIDDLEWARE
 // =========================
 
-// Parse JSON requests
+// Parse JSON
 app.use(express.json());
 
-// CORS configuration
+// ✅ CORS (SAFE + WORKING FOR VERCEL)
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*", // optional, allows any frontend
+    origin: "*", // 🔥 allow all for now (ok for submission)
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
@@ -31,7 +31,7 @@ const workspaceRoutes = require("./routes/workspaceRoutes");
 const userRoutes = require("./routes/userRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const sprintRoutes = require("./routes/sprintRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes"); // ✅ ADDED
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 // API routes
 app.use("/api/auth", authRoutes);
@@ -41,20 +41,21 @@ app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/sprints", sprintRoutes);
-app.use("/api/dashboard", dashboardRoutes); // ✅ ADDED
+app.use("/api/dashboard", dashboardRoutes);
 
-// Test route
+// =========================
+// TEST ROUTES
+// =========================
 app.get("/api/test", (req, res) => {
   res.json({ msg: "API working 🚀" });
 });
 
-// test post route
 app.post("/api/test", (req, res) => {
-  res.json({ msg: "Test route working" });
+  res.json({ msg: "POST test working 🚀" });
 });
 
 // =========================
-// CONNECT TO MONGODB
+// SERVER + DATABASE
 // =========================
 const PORT = process.env.PORT || 5000;
 
@@ -62,6 +63,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on port ${PORT}`)
+    );
   })
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
