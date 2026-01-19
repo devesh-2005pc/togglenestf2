@@ -1,0 +1,196 @@
+/* Topbar - matches dashboard neon aesthetic */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: saturate(1.4) blur(12px);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle glow border animation */
+.topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: var(--radius);
+  background: linear-gradient(45deg, var(--accent), var(--accent-2), var(--accent), var(--accent-2));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+.topbar:hover::before,
+.topbar:focus-within::before {
+  opacity: 1;
+}
+
+/* Search input - glassy with glow focus */
+.topbar input {
+  flex: 1;
+  max-width: 380px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 2;
+}
+
+.topbar input::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.topbar input:focus {
+  outline: none;
+  border-color: rgba(124,58,237,0.6);
+  box-shadow: 
+    0 0 0 3px rgba(124,58,237,0.2),
+    0 0 0 6px rgba(34,211,238,0.15),
+    0 12px 24px rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.10);
+  transform: translateY(-1px);
+}
+
+/* Search icon (add this to your HTML: <i class="search-icon">🔍</i>) */
+.topbar input + .search-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* User section - elevated avatar + dropdown trigger */
+.user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow: 
+    0 4px 16px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  object-fit: cover;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05) rotate(2deg);
+  border-color: var(--accent);
+  box-shadow: 
+    0 0 0 4px rgba(124,58,237,0.3),
+    0 8px 24px rgba(124,58,237,0.4);
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34,211,238,0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(34,211,238,0.3);
+  font-size: 12px;
+  color: var(--accent-2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 8px rgba(34,211,238,0.8);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Dropdown trigger arrow */
+.dropdown-arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.user:hover .dropdown-arrow {
+  border-top-color: var(--accent);
+  transform: rotate(180deg);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .topbar input {
+    max-width: 100%;
+    margin-right: 8px;
+  }
+  
+  .user {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar input {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+.guest-emoji {
+  font-size: 20px;           /* Emoji size */
+  margin-left: 8px;
+  width: 40px;               /* Circle width */
+  height: 40px;              /* Circle height */
+  display: flex;             /* To center the emoji */
+  align-items: center;       /* Vertical center */
+  justify-content: center;   /* Horizontal center */
+  background-color: #ccc;    /* Light grey circle */
+  border-radius: 50%;        /* Makes it a perfect circle */
+  cursor: default;           /* Optional: makes it feel like an avatar */
+}

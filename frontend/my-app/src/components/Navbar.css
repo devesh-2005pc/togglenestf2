@@ -1,0 +1,562 @@
+/* --- RESET + FONT (Enhanced) --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root {
+  --navbar-glow: rgba(124,58,237,0.3);
+}
+
+/* Navbar - full neon glassmorphism */
+.navbar {
+  width: 100%;
+  height: 76px;
+  background: linear-gradient(135deg, rgba(11,16,32,0.95), rgba(2,6,23,0.98));
+  backdrop-filter: saturate(1.4) blur(20px);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 
+    0 12px 40px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  position:sticky;
+  top:0;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Animated neon underline across entire navbar */
+.navbar::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  transform: scaleX(0);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar:hover::before,
+.navbar.scrolled::before {
+  transform: scaleX(1);
+}
+
+/* Logo - epic gradient with glow pulse */
+.navbar__logo {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, #3a7a65 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: none; /* Clean - no glow on default */
+  padding: 8px 0;
+}
+
+.navbar__logo::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--secondary), var(--accent));
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+.navbar__logo:hover {
+  transform: translateY(-1px);
+}
+
+.navbar__logo:hover::after {
+  width: 80px;
+}
+
+
+
+/* Navigation links - glass pills with neon underlines */
+.navbar__links {
+  list-style: none;
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.navbar__links a {
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  padding: 10px 0;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+.navbar__links a::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 1px;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.navbar__links a:hover {
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.navbar__links a:hover::before {
+  width: 100%;
+}
+
+.navbar__links a.active {
+  color: var(--text);
+}
+
+.navbar__links a.active::before {
+  width: 100%;
+  animation: glow-pulse 2s infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--accent); }
+  50% { box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
+}
+
+/* Action buttons - premium glass neon */
+.navbar__actions {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.btn-login,
+.btn-signup {
+  padding: 12px 24px;
+  border: 1px solid rgba(255,255,255,0.18);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Login - outlined glass */
+.btn-login {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+}
+
+.btn-login::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s;
+}
+
+.btn-login:hover::before {
+  left: 100%;
+}
+
+.btn-login:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(124,58,237,0.5);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(124,58,237,0.3),
+    0 0 0 1px rgba(124,58,237,0.4);
+}
+
+/* Signup - gradient glass with mega glow */
+.btn-signup {
+  background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(34,211,238,0.20));
+  color: var(--text);
+  border-color: rgba(124,58,237,0.4);
+  box-shadow: 0 4px 16px rgba(124,58,237,0.2);
+}
+
+.btn-signup::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: 12px;
+  background: linear-gradient(45deg, var(--accent), var(--accent-2), var(--accent));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.btn-signup:hover::before {
+  opacity: 1;
+}
+
+.btn-signup:hover {
+  transform: translateY(-3px) scale(1.05);
+  background: linear-gradient(135deg, rgba(124,58,237,0.35), rgba(34,211,238,0.30));
+  box-shadow: 
+    0 16px 40px rgba(124,58,237,0.45),
+    0 0 0 1px rgba(124,58,237,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* User avatar in navbar (if needed) */
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navbar-user:hover {
+  background: rgba(124,58,237,0.15);
+  box-shadow: 0 8px 25px rgba(124,58,237,0.3);
+}
+
+/* Responsive - Mobile menu trigger */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 0 1.5rem;
+  }
+  
+  .navbar__links {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+    height: 68px;
+  }
+  
+  .navbar__links,
+  .navbar__actions {
+    display: none;
+  }
+  
+  .navbar__mobile {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .hamburger {
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .hamburger span {
+    display: block;
+    height: 2px;
+    background: var(--text);
+    margin: 4px 0;
+    transition: 0.3s ease;
+    border-radius: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar__logo {
+    font-size: 1.3rem;
+  }
+  
+  .btn-login,
+  .btn-signup {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+}
+/* --- RESET + FONT (Enhanced) --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root {
+  --navbar-glow: rgba(124,58,237,0.3);
+}
+
+/* Navbar - full neon glassmorphism */
+.navbar {
+  width: 100%;
+  height: 90px; /* increased height */
+  background: linear-gradient(135deg, rgba(11,16,32,0.95), rgba(2,6,23,0.98));
+  backdrop-filter: saturate(1.4) blur(20px);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3rem; /* increased padding */
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 
+    0 12px 40px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Navbar Logo */
+.navbar__logo {
+  font-size: 2rem; /* increased font */
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent), #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+/* Navigation links */
+.navbar__links a {
+  font-size: 18px; /* bigger font */
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 12px 0;
+}
+
+/* Action buttons */
+.btn-login,
+.btn-signup {
+  padding: 14px 28px; /* bigger buttons */
+  font-size: 16px; /* bigger font */
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+/* Cards */
+.card {
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.04)
+  );
+  border-radius: 20px; /* bigger radius */
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 12px 35px rgba(0,0,0,.35); /* stronger shadow */
+  padding: 28px; /* bigger padding */
+  color: var(--text);
+  transition: transform .3s ease, box-shadow .3s ease;
+  min-height: 220px; /* bigger card height */
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 50px rgba(0,0,0,.42);
+}
+
+/* Card header */
+.card-header h3 {
+  font-size: 20px; /* bigger title */
+  margin: 0;
+  letter-spacing: .6px;
+}
+
+/* Stats grid */
+.stat-card {
+  min-height: 180px; /* bigger card */
+  justify-content: space-between;
+  padding: 24px; /* bigger padding */
+}
+
+.stat-card .value {
+  font-size: 26px; /* bigger numbers */
+}
+
+/* Spark animation inside stats */
+.spark {
+  height: 36px; /* bigger spark */
+}
+
+/* Bottom grid */
+.activity,
+.progress {
+  padding: 24px; /* bigger content padding */
+  border-radius: 18px; /* bigger radius */
+}
+
+/* Overview grid */
+.overview-grid .big-card {
+  min-height: 240px; /* bigger big cards */
+}
+
+.big-card-header h3 {
+  font-size: 22px; /* bigger subtitle */
+}
+
+/* Team Performance */
+.perf-box h2 {
+  font-size: 32px; /* bigger numbers */
+}
+
+.perf-box span {
+  font-size: 15px; /* bigger subtitle */
+}
+
+/* Workspace overview */
+.workspace-item {
+  font-size: 16px; /* bigger font */
+}
+
+.workspace-storage span {
+  font-size: 14px; /* bigger storage text */
+}
+
+/* Responsive tweaks for small screens */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 0 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar__logo {
+    font-size: 1.6rem;
+  }
+  .btn-login,
+  .btn-signup {
+    padding: 12px 22px;
+    font-size: 14px;
+  }
+}
+
+
+
+/* Link buttons in navbar */
+.navbar__links .link-btn {
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  padding: 10px 0;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar__links .link-btn::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 1px;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.navbar__links .link-btn:hover {
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.navbar__links .link-btn:hover::before {
+  width: 100%;
+}
+
+.navbar__links .link-btn.active {
+  color: var(--text);
+}
+
+.navbar__links .link-btn.active::before {
+  width: 100%;
+  animation: glow-pulse 2s infinite;
+}
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.popup-card {
+  background: linear-gradient(135deg, rgba(11,16,32,0.95), rgba(2,6,23,0.98));
+  color: #fff;
+  padding: 2rem 3rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  max-width: 320px;
+}
+
+.popup-card p {
+  margin-bottom: 1.5rem;
+  font-size: 16px;
+}
+
+.popup-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(124,58,237,0.6), rgba(34,211,238,0.6));
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.popup-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(124,58,237,0.6), 0 0 24px rgba(34,211,238,0.6);
+}
